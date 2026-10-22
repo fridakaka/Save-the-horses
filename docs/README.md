@@ -3,7 +3,7 @@
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
 ## Kör
-- Öppna `prototype/index.html` i en webbläsare, eller kör `python3 -m http.server` i mappen och öppna `localhost:8000`.
+- Öppna `docs/index.html` i en webbläsare, eller kör `python3 -m http.server` i mappen och öppna `localhost:8000`.
 - På mobil: liggande läge. Lägg gärna sidan på hemskärmen/öppna via lokalt nätverk.
 - Styrning: tryck/klicka var som helst eller mellanslag/pil upp = hoppa.
 
