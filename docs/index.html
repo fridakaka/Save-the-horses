@@ -21,6 +21,13 @@
   #mute{position:fixed;top:6px;right:6px;z-index:5;background:rgba(0,0,0,.35);color:#fff;font-size:15px;padding:5px 10px;margin:0}
   #rotate{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;background:#1d2a1f;text-align:center;font-size:20px;padding:30px}
   @media (orientation:portrait){#rotate{display:flex}}
+  .stall{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:min(330px,46vw);display:none;z-index:4}
+  .stall.show{display:block}
+  .stall .card{text-align:left;padding:16px 18px}
+  .stall h1{font-size:30px}
+  .stall .ability{background:#e9e0c2;border-radius:8px;padding:8px 10px;font-size:14px}
+  .stall button{margin:6px 0 0;font-size:16px;padding:9px 22px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid #2b2218;margin-right:6px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -38,6 +45,7 @@
 <div class="overlay" id="pHage"><div class="card">
   <h1 id="hageTitle">Hagen</h1>
   <p id="hageInfo"></p>
+  <p id="hageMem" class="small"></p>
   <p class="small">Spelet är sparat. Tappar du hela flocken senare börjar du om härifrån.</p>
   <button id="btnNext">Fortsätt</button>
 </div></div>
@@ -52,6 +60,15 @@
   <h1>Skogens slut!</h1>
   <p id="winInfo"></p>
   <button id="btnAgain">Spela igen</button>
+</div></div>
+
+<div class="stall" id="pStall"><div class="card">
+  <p class="small"><span class="dot" id="stDot"></span><span id="stKind"></span></p>
+  <h1 id="stName"></h1>
+  <p id="stDesc"></p>
+  <p class="ability" id="stAbility"></p>
+  <p class="small" id="stCount"></p>
+  <button id="btnStallNext">Nästa</button>
 </div></div>
 
 <div id="rotate">Vrid telefonen till liggande läge 🐎</div>
@@ -74,10 +91,20 @@ const CFG={
   starter:['L','R','R','J']
 };
 const TYPES={
-  L:{name:'Ledare', reach:215, h:58, color:'#8c5a3c'},
-  R:{name:'Löpare', reach:188, h:52, color:'#c8a46a'},
-  J:{name:'Hoppare',reach:248, h:66, color:'#ece8de'}
+  L:{name:'Ledare', pl:'ledare', reach:215, h:58, color:'#8c5a3c', ability:'Går först och sätter takten. Ingen särskild förmåga.'},
+  R:{name:'Löpare', pl:'löpare', reach:188, h:52, color:'#c8a46a', ability:'Snabb galopp, men korta hopp. Faller först vid breda avgrunder.'},
+  J:{name:'Hoppare',pl:'hoppare',reach:248, h:66, color:'#ece8de', ability:'Långa hopp. Klarar de bredaste avgrunderna.'},
+  T:{name:'Tålig',  pl:'tåliga', reach:200, h:50, color:'#6a5d4e', ability:'Klarar ett felsteg: faller inte första gången utan kämpar sig upp. Läker i nästa hage.'},
+  K:{name:'Lugn',   pl:'lugna',  reach:200, h:52, color:'#a9bccd', ability:'Gör flocken lugnare: sena hopp förlåts mer (+12 px per Lugn, högst två räknas).'}
 };
+const DESC={
+  L:['Född att leda. Går först när alla andra tvekar.','Stolt gång och stadig blick. Flocken följer utan att fråga.','Har sett fler stup än de flesta, och kommit hem varje gång.'],
+  R:['Lätt på foten och alltid i förväg. Hoppar hellre ofta än högt.','Älskar öppna ängar och vet knappt vad ett stup är. Än.','Snabb som vinden och lika svår att hålla stilla.'],
+  J:['Svävar över avgrunder som om de inte fanns.','Har hoppat sedan föltiden och landar alltid mjukt.','Ser en kant och ser en möjlighet.'],
+  T:['Seg som en gammal ek. Ramlar en gång, reser sig, går vidare.','Bär på gamla ärr och en envis blick. Ger sig aldrig första gången.','Sällan snabb, nästan aldrig ensam. Håller ihop flocken i motvind.'],
+  K:['Lugn som en stilla sjö. Med den i närheten vågar de andra vänta lite till.','Andas långsamt, även när marken försvinner.','Ett lugn som smittar. Flocken hoppar med mer tillförsikt.']
+};
+const WILD_TYPES=['R','T','K','J','K','R','T','J','K'];
 const NAMES=['Saga','Vinter','Blixt','Stjärna','Embla','Frej','Dagg','Skymning','Vilja','Björk','Ask','Rök','Gryning','Nordan','Lykke','Tallis','Mjölk','Brasa','Svala','Hjorten','Solvi','Frost','Älva','Kastanj'];
 
 const $=id=>document.getElementById(id);
@@ -113,7 +140,7 @@ function buildLevel(){
     }
     [0,Math.floor(s.n/2),s.n-2].forEach(k=>{
       const A=hazards[first+k],B=hazards[first+k+1];
-      wild.push({x:(A.x1+B.x0)/2,t:r()<.45?'J':'R',taken:false});
+      wild.push({x:(A.x1+B.x0)/2,t:WILD_TYPES[wild.length%WILD_TYPES.length],taken:false});
     });
     base+=s.len;
     hages.push({x:base-350});
@@ -125,24 +152,24 @@ const LV=buildLevel();
 
 /* ================= Spelstate ================= */
 const S={mode:'title',F:0,v:0,ramp:0,time:0,horses:[],events:[],lastTap:-9,buffer:0,toasts:[],floats:[],
-  shake:0,flash:0,bump:0,seq:0,nameIx:0,nextHage:0,overT:0,lostTotal:0,joinedTotal:0,perfects:0,muted:false,onStep:null,timeScale:1};
-const isAlive=h=>h.state==='run'||h.state==='air';
+  shake:0,flash:0,bump:0,seq:0,nameIx:0,zoomE:0,fx:0,stall:null,focusH:null,pending:null,fallen:[],coy:0,nextHage:0,overT:0,lostTotal:0,joinedTotal:0,perfects:0,muted:false,onStep:null,timeScale:1};
+const isAlive=h=>h.state==='run'||h.state==='air'||h.state==='climb';
 const aliveList=()=>S.horses.filter(isAlive);
-function front(){let b=null;for(const h of S.horses){if(!isAlive(h)||h.joinT>0)continue;if(!b||h.x>b.x)b=h}return b}
+function front(){let b=null;for(const h of S.horses){if(!isAlive(h)||h.state==='climb'||h.joinT>0)continue;if(!b||h.x>b.x)b=h}return b}
 
 const KEY='save-the-horses-proto-v1';
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.horses)&&s.horses.length&&Number.isInteger(s.hage)&&LV.hages[s.hage])return s}catch(e){}return null}
 function writeSave(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
 function clearSave(){try{localStorage.removeItem(KEY)}catch(e){}}
 
-function addHorse(t,name,reach,x){
+function addHorse(t,name,reach,x,d){
   const T=TYPES[t];
   const nm=name||(NAMES[S.nameIx%NAMES.length]+(S.nameIx>=NAMES.length?' '+(Math.floor(S.nameIx/NAMES.length)+1):''));
   if(!name)S.nameIx++;
   const h={id:S.seq++,t,name:nm,reach:reach||T.reach+(Math.random()*12-6),H:T.h,
     x:x!=null?x:S.F,lag:0,tl:0,jit:(Math.random()-.5)*8,row:S.seq%3,state:'run',y:0,rot:0,vy:0,age:0,
     ei:S.events.length,xt:0,D:0,phase:Math.random()*6,joinT:0};
-  h.lag=S.F-h.x;
+  h.lag=S.F-h.x;h.d=d!=null?d:h.id%3;h.fresh=false;h.hurt=false;
   S.horses.push(h);return h;
 }
 function relayout(snap){
@@ -154,13 +181,13 @@ function relayout(snap){
 
 function resetRun(){
   S.horses=[];S.events=[];S.toasts=[];S.floats=[];S.buffer=0;S.lastTap=-9;S.seq=0;S.nameIx=0;
-  S.shake=0;S.flash=0;S.v=0;S.ramp=0;S.lostTotal=0;S.joinedTotal=0;S.perfects=0;
+  S.fallen=[];S.zoomE=0;S.stall=null;S.focusH=null;S.pending=null;S.shake=0;S.flash=0;S.v=0;S.ramp=0;S.lostTotal=0;S.joinedTotal=0;S.perfects=0;
 }
 function startRun(save){
   resetRun();
   if(save){
     S.F=LV.hages[save.hage].x;S.nextHage=save.hage+1;
-    save.horses.forEach(o=>addHorse(o.t,o.n,o.r,S.F));
+    save.horses.forEach(o=>addHorse(o.t,o.n,o.r,S.F,o.d));
   }else{
     S.F=0;S.nextHage=0;
     CFG.starter.forEach(t=>addHorse(t,null,null,0));
@@ -212,8 +239,15 @@ function toast(text,kind){S.toasts.push({text,kind,t:0});if(S.toasts.length>3)S.
 function floatText(x,y,text,c){S.floats.push({x,y:y-(S.floats.length%4)*15,text,c,t:0})}
 
 function lose(h,kind,z){
+  if(h.t==='T'&&!h.hurt){
+    h.hurt=true;h.state='climb';h.cx0=h.x;h.cx1=z.x1+8;h.cAmp=kind==='gap'?-34:z.h+6;
+    z.saved=(z.saved||0)+1;
+    floatText(h.x,CFG.groundY-50,h.name+' kämpar sig upp!','#ffd27a');
+    S.shake=.15;S.bump=1;sfx.lose();
+    return;
+  }
   h.state=kind==='gap'?'fall':'left';h.kind=kind;h.age=0;h.vy=kind==='gap'?0:-230;
-  z.lost++;S.lostTotal++;
+  z.lost++;S.lostTotal++;S.fallen.push(h.name);
   floatText(h.x,CFG.groundY-50,h.name+(kind==='gap'?' föll…':' snubblade…'),'#fff');
   S.shake=.3;S.flash=1;S.bump=1;
   if(navigator.vibrate)try{navigator.vibrate(28)}catch(e){}
@@ -237,7 +271,7 @@ function airCheck(h){
 function takeoff(h,isFront){h.state='air';h.xt=h.x;h.D=h.reach;if(isFront)sfx.jump()}
 
 function updateHorses(dt){
-  const n=aliveList().length,coy=CFG.coyote+Math.min(16,n);
+  const al0=aliveList(),n=al0.length,calm=Math.min(2,al0.filter(h=>h.t==='K').length)*12,coy=CFG.coyote+Math.min(16,n)+calm;S.coy=coy;
   const fr=S.mode==='run'?front():null;
   for(const h of S.horses.slice()){
     if(h.state==='gone')continue;
@@ -247,6 +281,7 @@ function updateHorses(dt){
     h.lag+=(h.tl-h.lag)*Math.min(1,dt*3);
     h.x=S.F-h.lag;
     h.phase+=dt*(2+S.v/26);
+    if(h.state==='climb'){const s=clamp((h.x-h.cx0)/(h.cx1-h.cx0),0,1);h.y=h.cAmp*Math.sin(Math.PI*s);if(h.x>=h.cx1){h.state='run';h.y=0}continue}
     if(h.state==='run'){
       while(h.ei<S.events.length&&S.events[h.ei]<h.x-6)h.ei++;
       if(S.mode==='run'&&h.ei<S.events.length&&h.x>=S.events[h.ei]){h.ei++;takeoff(h,h===fr)}
@@ -264,19 +299,48 @@ function gameOver(){S.mode='over';S.overT=1.5}
 function arrive(){
   const hi=S.nextHage,al=aliveList();
   S.F=LV.hages[hi].x;S.v=0;
+  al.forEach(h=>{h.hurt=false});
   const last=hi===LV.hages.length-1;
-  S.mode=last?'win':'hage';
-  const cnt={L:0,R:0,J:0};al.forEach(h=>cnt[h.t]++);
-  const txt=`${al.length} hästar nådde fram: `+Object.keys(TYPES).map(k=>`${cnt[k]} ${TYPES[k].name.toLowerCase()}`).join(', ')+'.';
+  const cnt={};Object.keys(TYPES).forEach(k=>cnt[k]=0);al.forEach(h=>cnt[h.t]++);
+  const parts=Object.keys(TYPES).filter(k=>cnt[k]).map(k=>cnt[k]+' '+(cnt[k]===1?TYPES[k].name.toLowerCase():TYPES[k].pl));
+  S.pending={last,hi,txt:al.length+' hästar nådde fram: '+parts.join(', ')+'.'};
+  if(last)clearSave();
+  else writeSave({hage:hi,horses:al.map(h=>({t:h.t,n:h.name,r:h.reach,d:h.d}))});
   sfx.hage();
-  if(last){
-    clearSave();
-    $('winInfo').textContent=txt+` Du tappade ${S.lostTotal} och fann ${S.joinedTotal} på vägen.`;
+  const fresh=al.filter(h=>h.fresh);
+  if(fresh.length)beginStall(fresh);else finishArrival();
+}
+function showStallCard(){
+  const st=S.stall,h=st.list[st.i],T=TYPES[h.t];
+  S.focusH=h;
+  $('stDot').style.background=T.color;
+  $('stKind').textContent='Ny i flocken · '+T.name;
+  $('stName').textContent=h.name;
+  $('stDesc').textContent=DESC[h.t][h.d%3];
+  $('stAbility').textContent='Förmåga: '+T.ability;
+  $('stCount').textContent=(st.i+1)+' av '+st.list.length;
+  $('btnStallNext').textContent=st.i<st.list.length-1?'Nästa':'Till hagen';
+}
+function beginStall(list){
+  S.mode='stall';S.stall={list,i:0};S.fx=list[0].x;
+  showStallCard();show('pStall');
+}
+function nextStall(){
+  const st=S.stall;if(!st)return;
+  st.i++;
+  if(st.i<st.list.length){sfx.join();showStallCard()}
+  else{hide('pStall');S.horses.forEach(h=>{h.fresh=false});finishArrival()}
+}
+function finishArrival(){
+  const p=S.pending;S.mode=p.last?'win':'hage';S.stall=null;
+  const mem=S.fallen.length?'Vi minns: '+S.fallen.join(', ')+'.':'';
+  S.fallen=[];
+  if(p.last){
+    $('winInfo').textContent=p.txt+' Du tappade '+S.lostTotal+' och fann '+S.joinedTotal+' på vägen.'+(mem?' '+mem:'');
     show('pWin');
   }else{
-    writeSave({hage:hi,horses:al.map(h=>({t:h.t,n:h.name,r:h.reach}))});
-    $('hageTitle').textContent=`Hage ${hi+1} av ${LV.hages.length} – sparat`;
-    $('hageInfo').textContent=txt;
+    $('hageTitle').textContent='Hage '+(p.hi+1)+' av '+LV.hages.length+' – sparat';
+    $('hageInfo').textContent=p.txt;$('hageMem').textContent=mem;
     show('pHage');
   }
 }
@@ -291,7 +355,7 @@ function runStep(dt){
   // plocka upp vilda hästar
   for(const w of LV.wild){
     if(!w.taken&&S.F>=w.x-8){
-      w.taken=true;const h=addHorse(w.t,null,null,w.x);h.joinT=1.2;S.joinedTotal++;S.bump=1;
+      w.taken=true;const h=addHorse(w.t,null,null,w.x);h.joinT=1.2;h.fresh=true;S.joinedTotal++;S.bump=1;
       relayout(false);sfx.join();
       floatText(w.x,CFG.groundY-60,'+'+h.name+' ('+TYPES[w.t].name+')','#ffe08a');
     }
@@ -307,7 +371,7 @@ function runStep(dt){
       if(!z.eng&&fx>z.x0-30)z.eng=al.length;
       if(z.eng&&rx>z.x1+50){
         z.done=true;
-        if(z.lost===0){S.perfects++;toast('Alla klarade det!','good');sfx.good()}
+        if(z.lost===0){S.perfects++;toast(z.saved?'Alla klarade det – knappt!':'Alla klarade det!','good');sfx.good()}
         else toast(`Tappade ${z.lost} av ${z.eng}`,'bad');
       }
     }
@@ -317,11 +381,13 @@ function runStep(dt){
 
 function step(dt){
   S.time+=dt;
+  S.zoomE+=((S.mode==='stall'?1:0)-S.zoomE)*Math.min(1,dt*4);if(S.mode!=='stall'&&S.zoomE<.003)S.zoomE=0;
   S.shake=Math.max(0,S.shake-dt);S.flash=Math.max(0,S.flash-dt*2.2);S.bump=Math.max(0,S.bump-dt*3);
   for(const t of S.toasts)t.t+=dt;S.toasts=S.toasts.filter(t=>t.t<1.8);
   for(const f of S.floats)f.t+=dt;S.floats=S.floats.filter(f=>f.t<1.6);
   if(S.mode==='run')runStep(dt);
   else if(S.mode==='over'){S.v*=.97;S.F+=S.v*dt;S.overT-=dt;if(S.overT<=0&&!$('pOver').classList.contains('show'))showOver()}
+  else if(S.mode==='stall'){S.v=0;if(S.stall){const cur=S.stall.list[S.stall.i];S.fx+=(cur.x-S.fx)*Math.min(1,dt*5)}}
   else if(S.mode==='hage'||S.mode==='win'||S.mode==='title'){S.v=0}
   updateHorses(dt);
   if(S.onStep)S.onStep();
@@ -330,7 +396,7 @@ function step(dt){
 /* ================= Paneler ================= */
 function show(id){$(id).classList.add('show')}
 function hide(id){$(id).classList.remove('show')}
-function hideAll(){['pTitle','pHage','pOver','pWin'].forEach(hide)}
+function hideAll(){['pTitle','pHage','pOver','pWin','pStall'].forEach(hide)}
 function showOver(){
   const sv=loadSave();
   $('overInfo').textContent=sv?`Du börjar om från hage ${sv.hage+1} med de ${sv.horses.length} hästar du hade där.`:'Du börjar om från början.';
@@ -344,6 +410,7 @@ function refreshTitle(){
 }
 $('btnStart').onclick=()=>{initAudio();startRun(loadSave())};
 $('btnNew').onclick=()=>{initAudio();clearSave();startRun(null)};
+$('btnStallNext').onclick=nextStall;
 $('btnNext').onclick=()=>{hide('pHage');S.nextHage++;S.mode='run';S.ramp=0};
 $('btnRetry').onclick=()=>{hide('pOver');startRun(loadSave())};
 $('btnAgain').onclick=()=>{hide('pWin');clearSave();startRun(null)};
@@ -362,12 +429,17 @@ function drawHorse(h,sx,sy,o){
   const p=h.phase;
   const la=air?[1.05,.8,-.95,-1.2]:[Math.sin(p)*.9*amp,Math.sin(p+.7)*.9*amp,Math.sin(p+3.3)*.9*amp,Math.sin(p+4)*.9*amp];
   const dark=shade(col,-55);
+  if(h.t==='K'&&!o.graze){
+    const gl=ctx.createRadialGradient(4,-26,2,4,-26,36);gl.addColorStop(0,'rgba(190,225,255,.35)');gl.addColorStop(1,'rgba(190,225,255,0)');
+    ctx.fillStyle=gl;ctx.fillRect(-34,-64,76,76);
+  }
   ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=dark;ctx.lineWidth=3.2;
   const leg=(x,a)=>{ctx.beginPath();ctx.moveTo(x,-20);ctx.lineTo(x+Math.sin(a)*20,-20+Math.cos(a)*20);ctx.stroke()};
   leg(-10,la[2]);leg(12,la[0]);
   // kropp
   ctx.fillStyle=col;ctx.strokeStyle='#2b2218';ctx.lineWidth=1;
   ctx.beginPath();ctx.ellipse(0,-24,18,9,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  if(h.hurt){ctx.fillStyle='#b83a2c';ctx.fillRect(-6,-33,12,4);ctx.fillRect(-1.5,-36,3,10)}
   // hals + huvud
   const bob=o.graze?Math.sin(S.time*1.5+h.id)*1.5:0;
   ctx.beginPath();
@@ -514,7 +586,7 @@ function drawHud(){
   for(const k of Object.keys(TYPES)){
     ctx.fillStyle=TYPES[k].color;ctx.strokeStyle='#2b2218';ctx.lineWidth=1;
     ctx.beginPath();ctx.arc(x+5,56,5,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#1f2a1c';ctx.fillText(cnt[k],x+13,60);x+=40;
+    ctx.fillStyle='#1f2a1c';ctx.fillText(cnt[k],x+13,60);x+=34;
   }
   // framsteg
   const w=Math.min(320,viewW*.38),bx=(viewW-w)/2,by=18;
@@ -531,6 +603,12 @@ function drawHud(){
   ctx.globalAlpha=1;ctx.textAlign='left';
 }
 
+function applyZoom(e){
+  const fh=S.focusH,fx=S.fx-cam,fy=CFG.groundY-(fh?fh.row*5:0);
+  const tx=fx+(viewW*.27-fx)*e,ty=fy+(CFG.H*.9-fy)*e,z=1+1.5*e;
+  ctx.translate(tx,ty);ctx.scale(z,z);ctx.translate(-fx,-fy);
+  return{fx,fy};
+}
 function render(){
   const dpr=Math.min(2,window.devicePixelRatio||1);
   const w=Math.floor(innerWidth*dpr),h=Math.floor(innerHeight*dpr);
@@ -540,10 +618,23 @@ function render(){
   ctx.setTransform(scale,0,0,scale,0,0);
   ctx.save();
   if(S.shake>0)ctx.translate((Math.random()-.5)*S.shake*14,(Math.random()-.5)*S.shake*10);
+  const ze=S.zoomE;
+  if(ze>.003)applyZoom(ze);
   drawWorld();
   ctx.restore();
+  if(ze>.003&&S.focusH&&S.focusH.state!=='gone'){
+    ctx.fillStyle='rgba(14,22,12,'+(.74*ze)+')';ctx.fillRect(0,0,viewW,CFG.H);
+    ctx.save();
+    const zz=applyZoom(ze);
+    const sg=ctx.createRadialGradient(zz.fx+6,zz.fy-26,5,zz.fx+6,zz.fy-26,70);
+    sg.addColorStop(0,'rgba(255,226,150,'+(.35*ze)+')');sg.addColorStop(1,'rgba(255,226,150,0)');
+    ctx.fillStyle=sg;ctx.fillRect(zz.fx-80,zz.fy-100,170,120);
+    ctx.fillStyle='rgba(0,0,0,'+(.3*ze)+')';ctx.beginPath();ctx.ellipse(zz.fx,zz.fy+1,22,3.5,0,0,Math.PI*2);ctx.fill();
+    drawHorse(S.focusH,zz.fx,zz.fy-S.focusH.y,{});
+    ctx.restore();
+  }
   if(S.flash>0){ctx.fillStyle=`rgba(120,20,10,${.22*S.flash})`;ctx.fillRect(0,0,viewW,CFG.H)}
-  drawHud();
+  if(S.mode!=='stall')drawHud();
 }
 
 /* ================= Loop ================= */
@@ -558,7 +649,7 @@ function frame(t){
 }
 
 idleScene();refreshTitle();
-window.__sth={S,LV,CFG,tap,front,startRun,loadSave,aliveList,idleScene,refreshTitle};
+window.__sth={S,LV,CFG,tap,front,startRun,loadSave,aliveList,idleScene,refreshTitle,addHorse,relayout,nextStall};
 requestAnimationFrame(frame);
 })();
 </script>
