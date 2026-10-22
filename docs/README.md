@@ -1,4 +1,4 @@
-# Save the Horses – prototyp 0.2
+# Save the Horses – prototyp 0.3
 
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
@@ -12,7 +12,9 @@ Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**
 - Hinder: **stup** (avgrund) och **stock**. Vilda hästar plockas upp när flocken passerar.
 - Fem hästtyper: Ledare (brun), Löpare (sand, kort hopp), Hoppare (ljus, långt hopp), **Tålig** (mörk, klarar ett felsteg) och **Lugn** (blågrå, förlåter sena hopp).
 - **Tålig:** faller inte första gången utan kämpar sig upp (röd binda syns). Läker i nästa hage. Nästa felsteg efter det är förlust.
-- **Lugn:** utökar tidsmarginalen för sena hopp med 12 px per Lugn (högst två räknas) för hela flocken.
+- **Lugn:** utökar tidsmarginalen för sena hopp med 12 px per Lugn (högst två räknas) för hela flocken. När den räddar flocken visas "Lugn hjälpte flocken!".
+- **Skygga vildhästar:** några hästar (markerade med orange !) är skygga. I stallscenen måste du hålla in "Håll för att tämja" i ca 1,4 s. Låter du dem vara rymmer de under natten när du går vidare. Sparningen innehåller bara tämjda hästar.
+- Hästarna är ritade som hästar med olika byggnad och färg per typ: Ledare (fux med bläs), Löpare (lätt palomino), Hoppare (grå skimmel), Tålig (kraftig mörk), Lugn (blågrå med ring på marken).
 - **Stallscen:** i hagen zoomar kameran in på varje ny häst med namn, personlighetstext och förmåga. Hästar som tappats sedan förra hagen listas som "Vi minns: …".
 - **Kaskadhopp:** ett tryck sätter en hoppunkt; varje häst hoppar när den når punkten. Sen tajming = hästarna längst fram faller först, de bakre hinner hoppa. För tidigt hopp = hästar med kort hopp (Löpare) faller.
 - Flocken sparas automatiskt (localStorage) varje gång den når en hage. Förlorar du alla hästar börjar du om från senaste hagen med den flock du hade där. "Ny start" nollställer.

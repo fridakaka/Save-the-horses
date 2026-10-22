@@ -28,6 +28,10 @@
   .stall .ability{background:#e9e0c2;border-radius:8px;padding:8px 10px;font-size:14px}
   .stall button{margin:6px 0 0;font-size:16px;padding:9px 22px}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid #2b2218;margin-right:6px;vertical-align:middle}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  #btnTame{position:relative;overflow:hidden;touch-action:none;background:linear-gradient(90deg,#4f7d3a calc(var(--p,0)*100%),var(--ink) calc(var(--p,0)*100%))}
+  .card.night{background:#1e2a3d;color:#e8e2c8}
+  .card.night button{background:#e8e2c8;color:#1e2a3d}
 </style>
 </head>
 <body>
@@ -46,6 +50,7 @@
   <h1 id="hageTitle">Hagen</h1>
   <p id="hageInfo"></p>
   <p id="hageMem" class="small"></p>
+  <p id="hageWild" class="small" style="color:#8a2b1d;opacity:1"></p>
   <p class="small">Spelet är sparat. Tappar du hela flocken senare börjar du om härifrån.</p>
   <button id="btnNext">Fortsätt</button>
 </div></div>
@@ -68,7 +73,14 @@
   <p id="stDesc"></p>
   <p class="ability" id="stAbility"></p>
   <p class="small" id="stCount"></p>
-  <button id="btnStallNext">Nästa</button>
+  <p class="small" id="stNote"></p>
+  <div class="btnrow"><button id="btnTame" style="display:none">Håll för att tämja</button><button id="btnStallNext">Nästa</button></div>
+</div></div>
+
+<div class="overlay" id="pNight"><div class="card night">
+  <h1>Natten</h1>
+  <p id="nightInfo"></p>
+  <button id="btnDawn">Gryning</button>
 </div></div>
 
 <div id="rotate">Vrid telefonen till liggande läge 🐎</div>
@@ -91,11 +103,11 @@ const CFG={
   starter:['L','R','R','J']
 };
 const TYPES={
-  L:{name:'Ledare', pl:'ledare', reach:215, h:58, color:'#8c5a3c', ability:'Går först och sätter takten. Ingen särskild förmåga.'},
-  R:{name:'Löpare', pl:'löpare', reach:188, h:52, color:'#c8a46a', ability:'Snabb galopp, men korta hopp. Faller först vid breda avgrunder.'},
-  J:{name:'Hoppare',pl:'hoppare',reach:248, h:66, color:'#ece8de', ability:'Långa hopp. Klarar de bredaste avgrunderna.'},
-  T:{name:'Tålig',  pl:'tåliga', reach:200, h:50, color:'#6a5d4e', ability:'Klarar ett felsteg: faller inte första gången utan kämpar sig upp. Läker i nästa hage.'},
-  K:{name:'Lugn',   pl:'lugna',  reach:200, h:52, color:'#a9bccd', ability:'Gör flocken lugnare: sena hopp förlåts mer (+12 px per Lugn, högst två räknas).'}
+  L:{name:'Ledare', pl:'ledare', reach:215, h:58, color:'#9b5a34', ability:'Går först och sätter takten. Ingen särskild förmåga.'},
+  R:{name:'Löpare', pl:'löpare', reach:188, h:52, color:'#d8b06c', ability:'Snabb galopp, men korta hopp. Faller först vid breda avgrunder.'},
+  J:{name:'Hoppare',pl:'hoppare',reach:248, h:66, color:'#dcdddb', ability:'Långa hopp. Klarar de bredaste avgrunderna.'},
+  T:{name:'Tålig',  pl:'tåliga', reach:200, h:50, color:'#3c322b', ability:'Klarar ett felsteg: faller inte första gången utan kämpar sig upp. Läker i nästa hage.'},
+  K:{name:'Lugn',   pl:'lugna',  reach:200, h:52, color:'#8fa4ba', ability:'Gör flocken lugnare: du kan trycka lite för sent utan att hästar faller. Två Lugn hjälper mest.'}
 };
 const DESC={
   L:['Född att leda. Går först när alla andra tvekar.','Stolt gång och stadig blick. Flocken följer utan att fråga.','Har sett fler stup än de flesta, och kommit hem varje gång.'],
@@ -104,7 +116,7 @@ const DESC={
   T:['Seg som en gammal ek. Ramlar en gång, reser sig, går vidare.','Bär på gamla ärr och en envis blick. Ger sig aldrig första gången.','Sällan snabb, nästan aldrig ensam. Håller ihop flocken i motvind.'],
   K:['Lugn som en stilla sjö. Med den i närheten vågar de andra vänta lite till.','Andas långsamt, även när marken försvinner.','Ett lugn som smittar. Flocken hoppar med mer tillförsikt.']
 };
-const WILD_TYPES=['R','T','K','J','K','R','T','J','K'];
+const WILD_SPEC=[['R',0],['T',0],['K',0],['J',1],['K',1],['R',0],['T',0],['J',1],['K',0]];  // [typ, skygg?]
 const NAMES=['Saga','Vinter','Blixt','Stjärna','Embla','Frej','Dagg','Skymning','Vilja','Björk','Ask','Rök','Gryning','Nordan','Lykke','Tallis','Mjölk','Brasa','Svala','Hjorten','Solvi','Frost','Älva','Kastanj'];
 
 const $=id=>document.getElementById(id);
@@ -140,19 +152,19 @@ function buildLevel(){
     }
     [0,Math.floor(s.n/2),s.n-2].forEach(k=>{
       const A=hazards[first+k],B=hazards[first+k+1];
-      wild.push({x:(A.x1+B.x0)/2,t:WILD_TYPES[wild.length%WILD_TYPES.length],taken:false});
+      wild.push({x:(A.x1+B.x0)/2,t:WILD_SPEC[wild.length%WILD_SPEC.length][0],shy:!!WILD_SPEC[wild.length%WILD_SPEC.length][1],taken:false});
     });
     base+=s.len;
     hages.push({x:base-350});
   });
-  hazards.forEach(z=>{z.lost=0;z.eng=0;z.done=false});
+  hazards.forEach(z=>{z.lost=0;z.eng=0;z.done=false;z.calmShown=false;z.saved=0});
   return{hazards,wild,hages,end:hages[hages.length-1].x};
 }
 const LV=buildLevel();
 
 /* ================= Spelstate ================= */
 const S={mode:'title',F:0,v:0,ramp:0,time:0,horses:[],events:[],lastTap:-9,buffer:0,toasts:[],floats:[],
-  shake:0,flash:0,bump:0,seq:0,nameIx:0,zoomE:0,fx:0,stall:null,focusH:null,pending:null,fallen:[],coy:0,nextHage:0,overT:0,lostTotal:0,joinedTotal:0,perfects:0,muted:false,onStep:null,timeScale:1};
+  shake:0,flash:0,bump:0,seq:0,nameIx:0,zoomE:0,fx:0,stall:null,focusH:null,pending:null,fallen:[],coy:0,coyBase:0,coyCalm:0,holding:false,tameP:0,tameShown:-1,nextHage:0,overT:0,lostTotal:0,joinedTotal:0,perfects:0,muted:false,onStep:null,timeScale:1};
 const isAlive=h=>h.state==='run'||h.state==='air'||h.state==='climb';
 const aliveList=()=>S.horses.filter(isAlive);
 function front(){let b=null;for(const h of S.horses){if(!isAlive(h)||h.state==='climb'||h.joinT>0)continue;if(!b||h.x>b.x)b=h}return b}
@@ -169,7 +181,7 @@ function addHorse(t,name,reach,x,d){
   const h={id:S.seq++,t,name:nm,reach:reach||T.reach+(Math.random()*12-6),H:T.h,
     x:x!=null?x:S.F,lag:0,tl:0,jit:(Math.random()-.5)*8,row:S.seq%3,state:'run',y:0,rot:0,vy:0,age:0,
     ei:S.events.length,xt:0,D:0,phase:Math.random()*6,joinT:0};
-  h.lag=S.F-h.x;h.d=d!=null?d:h.id%3;h.fresh=false;h.hurt=false;
+  h.lag=S.F-h.x;h.d=d!=null?d:h.id%3;h.fresh=false;h.hurt=false;h.shy=false;h.calm=0;
   S.horses.push(h);return h;
 }
 function relayout(snap){
@@ -193,7 +205,7 @@ function startRun(save){
     CFG.starter.forEach(t=>addHorse(t,null,null,0));
   }
   LV.wild.forEach(w=>w.taken=w.x<S.F+1);
-  LV.hazards.forEach(z=>{z.lost=0;z.eng=0;z.done=false});
+  LV.hazards.forEach(z=>{z.lost=0;z.eng=0;z.done=false;z.calmShown=false;z.saved=0});
   relayout(true);
   hideAll();S.mode='run';
 }
@@ -268,14 +280,22 @@ function airCheck(h){
     if(h.x>z.x0-4&&h.x<z.x1+4&&h.y<z.h+3){lose(h,'log',z);return}
   }
 }
-function takeoff(h,isFront){h.state='air';h.xt=h.x;h.D=h.reach;if(isFront)sfx.jump()}
+function takeoff(h,isFront){
+  h.state='air';h.xt=h.x;h.D=h.reach;if(isFront)sfx.jump();
+  if(S.coyCalm>0)for(const z of LV.hazards){
+    if(z.k==='gap'&&!z.calmShown&&h.x>z.x0+S.coyBase&&h.x<=z.x0+S.coyBase+S.coyCalm&&h.x<z.x1){
+      z.calmShown=true;floatText(h.x,CFG.groundY-95,'Lugn hjälpte flocken!','#a9d4ff');
+    }
+  }
+}
 
 function updateHorses(dt){
-  const al0=aliveList(),n=al0.length,calm=Math.min(2,al0.filter(h=>h.t==='K').length)*12,coy=CFG.coyote+Math.min(16,n)+calm;S.coy=coy;
+  const al0=aliveList(),n=al0.length,calm=Math.min(2,al0.filter(h=>h.t==='K').length)*12,coy=CFG.coyote+Math.min(16,n)+calm;S.coy=coy;S.coyBase=coy-calm;S.coyCalm=calm;
   const fr=S.mode==='run'?front():null;
   for(const h of S.horses.slice()){
     if(h.state==='gone')continue;
     if(h.state==='fall'){h.vy+=CFG.gravity*dt;h.y-=h.vy*dt;h.x+=60*dt;h.rot+=2.4*dt;h.phase+=dt*6;if(h.y<-330)h.state='gone';continue}
+    if(h.state==='away'){h.age+=dt;h.x+=380*dt;h.phase+=dt*11;if(h.age>1.6)h.state='gone';continue}
     if(h.state==='left'){h.age+=dt;h.vy+=CFG.gravity*dt;h.y-=h.vy*dt;if(h.y<=0){h.y=0;h.vy=0}h.rot+=(1.45-h.rot)*Math.min(1,dt*6);if(h.age>2.4)h.state='gone';continue}
     if(h.joinT>0)h.joinT-=dt;
     h.lag+=(h.tl-h.lag)*Math.min(1,dt*3);
@@ -304,22 +324,34 @@ function arrive(){
   const cnt={};Object.keys(TYPES).forEach(k=>cnt[k]=0);al.forEach(h=>cnt[h.t]++);
   const parts=Object.keys(TYPES).filter(k=>cnt[k]).map(k=>cnt[k]+' '+(cnt[k]===1?TYPES[k].name.toLowerCase():TYPES[k].pl));
   S.pending={last,hi,txt:al.length+' hästar nådde fram: '+parts.join(', ')+'.'};
-  if(last)clearSave();
-  else writeSave({hage:hi,horses:al.map(h=>({t:h.t,n:h.name,r:h.reach,d:h.d}))});
+  if(last)clearSave();else persist();
   sfx.hage();
   const fresh=al.filter(h=>h.fresh);
   if(fresh.length)beginStall(fresh);else finishArrival();
 }
-function showStallCard(){
+function persist(){
+  const p=S.pending;if(!p||p.last)return;
+  const al=aliveList().filter(h=>!h.shy);
+  if(al.length)writeSave({hage:p.hi,horses:al.map(h=>({t:h.t,n:h.name,r:h.reach,d:h.d}))});
+}
+function tameDone(h){
+  h.shy=false;h.calm=1;S.holding=false;sfx.good();persist();showStallCard(true);
+}
+function showStallCard(keepP){
   const st=S.stall,h=st.list[st.i],T=TYPES[h.t];
   S.focusH=h;
+  if(!keepP){S.tameP=0;h.calm=0;S.tameShown=-1}
   $('stDot').style.background=T.color;
-  $('stKind').textContent='Ny i flocken · '+T.name;
+  $('stKind').textContent=(h.shy?'Skygg vildhäst · ':'Ny i flocken · ')+T.name;
   $('stName').textContent=h.name;
   $('stDesc').textContent=DESC[h.t][h.d%3];
   $('stAbility').textContent='Förmåga: '+T.ability;
   $('stCount').textContent=(st.i+1)+' av '+st.list.length;
-  $('btnStallNext').textContent=st.i<st.list.length-1?'Nästa':'Till hagen';
+  $('stNote').textContent=h.shy?'Skygg och orolig. Håll knappen intryckt för att gå fram lugnt. Låter du den vara rymmer den i natt.':(h.calm>=1?'Tämjd. Den följer flocken nu.':'');
+  $('btnTame').style.display=h.shy?'':'none';
+  const lastCard=st.i>=st.list.length-1;
+  $('btnStallNext').textContent=h.shy?'Låt vara':(lastCard?'Till hagen':'Nästa');
+  $('btnStallNext').className=h.shy?'ghost':'';
 }
 function beginStall(list){
   S.mode='stall';S.stall={list,i:0};S.fx=list[0].x;
@@ -339,6 +371,8 @@ function finishArrival(){
     $('winInfo').textContent=p.txt+' Du tappade '+S.lostTotal+' och fann '+S.joinedTotal+' på vägen.'+(mem?' '+mem:'');
     show('pWin');
   }else{
+    const shy=aliveList().filter(h=>h.shy).map(h=>h.name);
+    $('hageWild').textContent=shy.length?shy.join(', ')+(shy.length>1?' är fortfarande skygga.':' är fortfarande skygg.')+' Fortsätter du nu rymmer de i natt.':'';
     $('hageTitle').textContent='Hage '+(p.hi+1)+' av '+LV.hages.length+' – sparat';
     $('hageInfo').textContent=p.txt;$('hageMem').textContent=mem;
     show('pHage');
@@ -355,9 +389,9 @@ function runStep(dt){
   // plocka upp vilda hästar
   for(const w of LV.wild){
     if(!w.taken&&S.F>=w.x-8){
-      w.taken=true;const h=addHorse(w.t,null,null,w.x);h.joinT=1.2;h.fresh=true;S.joinedTotal++;S.bump=1;
+      w.taken=true;const h=addHorse(w.t,null,null,w.x);h.joinT=1.2;h.fresh=true;h.shy=!!w.shy;S.joinedTotal++;S.bump=1;
       relayout(false);sfx.join();
-      floatText(w.x,CFG.groundY-60,'+'+h.name+' ('+TYPES[w.t].name+')','#ffe08a');
+      floatText(w.x,CFG.groundY-80,'+'+h.name+' ('+TYPES[w.t].name+')'+(w.shy?' – skygg!':''),w.shy?'#ffb070':'#ffe08a');
     }
   }
   // tap-buffert
@@ -387,7 +421,13 @@ function step(dt){
   for(const f of S.floats)f.t+=dt;S.floats=S.floats.filter(f=>f.t<1.6);
   if(S.mode==='run')runStep(dt);
   else if(S.mode==='over'){S.v*=.97;S.F+=S.v*dt;S.overT-=dt;if(S.overT<=0&&!$('pOver').classList.contains('show'))showOver()}
-  else if(S.mode==='stall'){S.v=0;if(S.stall){const cur=S.stall.list[S.stall.i];S.fx+=(cur.x-S.fx)*Math.min(1,dt*5)}}
+  else if(S.mode==='stall'){S.v=0;if(S.stall){const cur=S.stall.list[S.stall.i];S.fx+=(cur.x-S.fx)*Math.min(1,dt*5);
+    if(cur.shy){
+      if(S.holding)S.tameP+=dt/1.4;else S.tameP=Math.max(0,S.tameP-dt*1.2);
+      cur.calm=Math.min(1,S.tameP);
+      const q=Math.round(cur.calm*50);if(q!==S.tameShown){S.tameShown=q;$('btnTame').style.setProperty('--p',(q/50).toFixed(2))}
+      if(S.tameP>=1)tameDone(cur);
+    }}}
   else if(S.mode==='hage'||S.mode==='win'||S.mode==='title'){S.v=0}
   updateHorses(dt);
   if(S.onStep)S.onStep();
@@ -396,7 +436,7 @@ function step(dt){
 /* ================= Paneler ================= */
 function show(id){$(id).classList.add('show')}
 function hide(id){$(id).classList.remove('show')}
-function hideAll(){['pTitle','pHage','pOver','pWin','pStall'].forEach(hide)}
+function hideAll(){['pTitle','pHage','pOver','pWin','pStall','pNight'].forEach(hide)}
 function showOver(){
   const sv=loadSave();
   $('overInfo').textContent=sv?`Du börjar om från hage ${sv.hage+1} med de ${sv.horses.length} hästar du hade där.`:'Du börjar om från början.';
@@ -411,53 +451,117 @@ function refreshTitle(){
 $('btnStart').onclick=()=>{initAudio();startRun(loadSave())};
 $('btnNew').onclick=()=>{initAudio();clearSave();startRun(null)};
 $('btnStallNext').onclick=nextStall;
-$('btnNext').onclick=()=>{hide('pHage');S.nextHage++;S.mode='run';S.ramp=0};
+function goOn(){S.nextHage++;S.mode='run';S.ramp=0}
+$('btnNext').onclick=()=>{
+  hide('pHage');
+  const shy=S.horses.filter(h=>isAlive(h)&&h.shy);
+  if(shy.length){
+    shy.forEach(h=>{h.state='away';h.age=0});relayout(false);
+    $('nightInfo').textContent=shy.map(h=>h.name).join(' och ')+' bröt sig loss under natten och försvann ut i skogen.';
+    show('pNight');
+  }else goOn();
+};
+$('btnDawn').onclick=()=>{hide('pNight');goOn()};
+(()=>{const b=$('btnTame');
+  b.addEventListener('pointerdown',e=>{e.preventDefault();S.holding=true;if(b.setPointerCapture)try{b.setPointerCapture(e.pointerId)}catch(_){}});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>{S.holding=false}));
+})();
 $('btnRetry').onclick=()=>{hide('pOver');startRun(loadSave())};
 $('btnAgain').onclick=()=>{hide('pWin');clearSave();startRun(null)};
 $('mute').onclick=e=>{S.muted=!S.muted;e.target.textContent=S.muted?'🔇':'🔊'};
 
 /* ================= Rendering ================= */
 let scale=1,viewW=640,cam=0;
+const LOOK={
+  L:{s:1.04,bulk:1,leg:1,coat:'#9b5a34',lower:'#7e4a2b',mane:'#2e1b10',blaze:1,socks:1},
+  R:{s:.94,bulk:.9,leg:1.12,coat:'#d8b06c',lower:'#c79f5c',mane:'#f2e3bd'},
+  J:{s:1.08,bulk:.96,leg:1.06,coat:'#dcdddb',lower:'#aeb2b6',mane:'#8a9097',dapple:1},
+  T:{s:1.04,bulk:1.14,leg:.9,thick:1.28,coat:'#3c322b',lower:'#2a221c',mane:'#14100c'},
+  K:{s:1,bulk:1,leg:1,coat:'#8fa4ba',lower:'#6f869d',mane:'#dfe6ee'}
+};
+const DAPPLES=[[-10,-33],[-2,-29],[6,-34],[12,-27],[-16,-28],[1,-37],[16,-35],[-7,-24]];
 function drawHorse(h,sx,sy,o){
   o=o||{};
-  const T=TYPES[h.t],col=T.color;
-  ctx.save();ctx.translate(sx,sy);const sc=1-(h.row||0)*.05;ctx.scale(sc,sc);
-  ctx.globalAlpha=o.alpha!=null?o.alpha:1;
-  if(h.rot){ctx.translate(0,-16);ctx.rotate(h.rot);ctx.translate(0,16)}
+  const L=LOOK[h.t]||LOOK.R,p=h.phase||0,col=L.coat,hid=h.id||0;
   const air=h.state==='air'||h.state==='fall';
-  const amp=o.graze?.06:(.15+.85*Math.min(1,S.v/120));
-  const p=h.phase;
-  const la=air?[1.05,.8,-.95,-1.2]:[Math.sin(p)*.9*amp,Math.sin(p+.7)*.9*amp,Math.sin(p+3.3)*.9*amp,Math.sin(p+4)*.9*amp];
-  const dark=shade(col,-55);
-  if(h.t==='K'&&!o.graze){
-    const gl=ctx.createRadialGradient(4,-26,2,4,-26,36);gl.addColorStop(0,'rgba(190,225,255,.35)');gl.addColorStop(1,'rgba(190,225,255,0)');
-    ctx.fillStyle=gl;ctx.fillRect(-34,-64,76,76);
+  const still=o.static||o.graze;
+  const amp=still?0:((o.run||h.state==='away')?1:.15+.85*Math.min(1,S.v/120));
+  ctx.save();
+  ctx.translate(sx,sy);
+  const sc=(o.scale||1)*.86*L.s*(1-(h.row||0)*.05);
+  ctx.scale(sc,sc);
+  ctx.globalAlpha=o.alpha!=null?o.alpha:1;
+  if(h.rot){ctx.translate(0,-24);ctx.rotate(h.rot);ctx.translate(0,24)}
+  if(h.t==='K'&&!o.scale&&(h.state==='run'||h.state==='air'||o.glow)){
+    const k=(S.time*.7+hid*.37)%1;
+    ctx.strokeStyle='rgba(170,210,245,'+(.55*(1-k))+')';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.ellipse(0,0,14+k*32,2.5+k*5,0,0,Math.PI*2);ctx.stroke();
+    const gl=ctx.createRadialGradient(4,-28,2,4,-28,38);gl.addColorStop(0,'rgba(190,225,255,.3)');gl.addColorStop(1,'rgba(190,225,255,0)');
+    ctx.fillStyle=gl;ctx.fillRect(-36,-68,80,80);
   }
-  ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=dark;ctx.lineWidth=3.2;
-  const leg=(x,a)=>{ctx.beginPath();ctx.moveTo(x,-20);ctx.lineTo(x+Math.sin(a)*20,-20+Math.cos(a)*20);ctx.stroke()};
-  leg(-10,la[2]);leg(12,la[0]);
-  // kropp
-  ctx.fillStyle=col;ctx.strokeStyle='#2b2218';ctx.lineWidth=1;
-  ctx.beginPath();ctx.ellipse(0,-24,18,9,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-  if(h.hurt){ctx.fillStyle='#b83a2c';ctx.fillRect(-6,-33,12,4);ctx.fillRect(-1.5,-36,3,10)}
-  // hals + huvud
-  const bob=o.graze?Math.sin(S.time*1.5+h.id)*1.5:0;
-  ctx.beginPath();
-  if(o.graze){ctx.moveTo(10,-30);ctx.lineTo(19,-28);ctx.lineTo(29,-12+bob);ctx.lineTo(22,-9+bob)}
-  else{ctx.moveTo(10,-30);ctx.lineTo(19,-31);ctx.lineTo(27,-45);ctx.lineTo(21,-47)}
-  ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.beginPath();
-  if(o.graze)ctx.ellipse(29,-8+bob,8,4,.9,0,Math.PI*2);else ctx.ellipse(31,-44,8,4.2,.5,0,Math.PI*2);
-  ctx.fill();ctx.stroke();
-  // man + svans
-  ctx.strokeStyle=dark;ctx.lineWidth=2.6;
-  ctx.beginPath();
-  if(o.graze){ctx.moveTo(12,-31);ctx.lineTo(24,-14+bob)}else{ctx.moveTo(12,-31);ctx.lineTo(22,-47)}
+  const L1=12*L.leg,L2=13*L.leg,Lg=L1+L2,th=L.thick||1;
+  ctx.translate(0,-(Lg-25)+((air||!amp)?0:Math.sin(p*2)*1.3*amp));
+  ctx.lineCap='round';ctx.lineJoin='round';
+  const legs=[{x:12,fore:1,ph:p+2.9,far:1},{x:-11,fore:0,ph:p+.35,far:1},{x:15,fore:1,ph:p+2.4,far:0},{x:-14,fore:0,ph:p,far:0}];
+  const drawLeg=l=>{
+    let a1,fold;
+    if(air){a1=l.fore?.95:-.9;fold=l.fore?1.55:.25}
+    else{a1=amp*.8*Math.sin(l.ph);fold=amp*1.3*Math.max(0,Math.cos(l.ph))}
+    const a2=a1-fold,hx=l.x,hy=-25;
+    const kx=hx+L1*Math.sin(a1),ky=hy+L1*Math.cos(a1),fx=kx+L2*Math.sin(a2),fy=ky+L2*Math.cos(a2);
+    ctx.strokeStyle=shade(col,l.far?-34:0);ctx.lineWidth=5.4*th;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(kx,ky);ctx.stroke();
+    ctx.strokeStyle=shade(L.socks&&l.fore?'#efe9dc':L.lower,l.far?-30:0);ctx.lineWidth=3.5*th;ctx.beginPath();ctx.moveTo(kx,ky);ctx.lineTo(fx,fy);ctx.stroke();
+    ctx.fillStyle='#1c1612';ctx.beginPath();ctx.ellipse(fx,fy+1,2.9*th*.85+.4,1.8,0,0,Math.PI*2);ctx.fill();
+    if(h.hurt&&l.fore&&!l.far){ctx.strokeStyle='#c0392b';ctx.lineWidth=4.8*th;ctx.beginPath();ctx.moveTo(kx+(fx-kx)*.25,ky+(fy-ky)*.25);ctx.lineTo(kx+(fx-kx)*.72,ky+(fy-ky)*.72);ctx.stroke()}
+  };
+  legs.filter(l=>l.far).forEach(drawLeg);
+  // svans
+  const tw=Math.sin(p*1.3)*3*(.4+amp);
+  ctx.strokeStyle=L.mane;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-20,-33);
+  if(air)ctx.bezierCurveTo(-30,-34,-36,-32,-44,-30+tw);else ctx.bezierCurveTo(-29,-33,-34,-24,-33,-13+tw*1.5);
   ctx.stroke();
-  const tw=Math.sin(p*1.3)*3;
-  ctx.beginPath();ctx.moveTo(-17,-27);ctx.quadraticCurveTo(-27,-26,-29,-14+tw);ctx.stroke();
-  ctx.lineWidth=3.2;
-  leg(-13,la[3]);leg(9,la[1]);
+  ctx.strokeStyle=shade(L.mane,28);ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(-21,-34);
+  if(air)ctx.bezierCurveTo(-30,-35,-37,-33,-45,-32+tw);else ctx.bezierCurveTo(-30,-34,-36,-25,-35,-15+tw*1.5);
+  ctx.stroke();
+  // kropp
+  ctx.save();ctx.translate(0,-30);ctx.scale(1,L.bulk);ctx.translate(0,30);
+  const bg=ctx.createLinearGradient(0,-42,0,-16);bg.addColorStop(0,col);bg.addColorStop(1,shade(col,-28));
+  ctx.fillStyle=bg;ctx.strokeStyle='rgba(30,20,12,.55)';ctx.lineWidth=.9;
+  ctx.beginPath();ctx.moveTo(-21,-30);
+  ctx.bezierCurveTo(-23,-39,-14,-42,-6,-39);ctx.bezierCurveTo(0,-37,6,-40,13,-41);
+  ctx.bezierCurveTo(19,-40,24,-34,23,-27);ctx.bezierCurveTo(22,-20,14,-17,4,-18);
+  ctx.bezierCurveTo(-4,-18,-12,-18,-17,-22);ctx.bezierCurveTo(-21,-24,-22,-27,-21,-30);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  if(L.dapple){ctx.fillStyle='rgba(105,112,118,.38)';for(const d of DAPPLES){ctx.beginPath();ctx.arc(d[0],d[1],2.3,0,Math.PI*2);ctx.fill()}}
+  ctx.restore();
+  legs.filter(l=>!l.far).forEach(drawLeg);
+  // hals och huvud
+  const shy=!!h.shy,calm=h.calm||0;
+  let nr;
+  if(o.graze)nr=1.05+Math.sin(S.time*1.3+hid)*.04;
+  else if(shy)nr=-.16*(1-calm)+Math.sin(S.time*9+hid)*.025*(1-calm);
+  else if(air)nr=-.08;
+  else nr=Math.sin(p)*.05*amp;
+  ctx.save();ctx.translate(11,-40);ctx.rotate(nr);ctx.translate(-11,40);
+  ctx.strokeStyle=L.mane;ctx.lineWidth=3.4;
+  for(let i=0;i<6;i++){
+    const t=i/5,x=11+15*t,y=-41-19*t,w=Math.sin(p*2+i*.9)*2.2*(.3+amp)+(air?-4:0);
+    ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x-4,y-1,x-9+w,y+8);ctx.stroke();
+  }
+  ctx.fillStyle=col;ctx.strokeStyle='rgba(30,20,12,.55)';ctx.lineWidth=.9;
+  ctx.beginPath();ctx.moveTo(9,-38);ctx.bezierCurveTo(15,-49,20,-56,26,-60);ctx.lineTo(29,-60);
+  ctx.bezierCurveTo(34,-56,38,-52,40,-48);ctx.lineTo(39.5,-44.5);
+  ctx.bezierCurveTo(35,-44.5,32,-46,30,-47);ctx.bezierCurveTo(26,-44,24,-38,22,-31);ctx.lineTo(12,-30);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=shade(col,-22);ctx.beginPath();ctx.moveTo(26.5,-60);ctx.lineTo(28,shy?-68:-66);ctx.lineTo(30.5,-60);ctx.closePath();ctx.fill();
+  if(L.blaze){ctx.fillStyle='#f4efe4';ctx.beginPath();ctx.moveTo(30,-58);ctx.lineTo(32.5,-58);ctx.lineTo(39,-48.5);ctx.lineTo(37,-47.5);ctx.closePath();ctx.fill()}
+  ctx.fillStyle='#14100c';ctx.beginPath();ctx.arc(32,-54,shy&&calm<1?1.9:1.5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(38.2,-46.8,.9,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  if(shy&&!o.scale){
+    ctx.fillStyle='rgba(255,140,50,'+(.6+.4*Math.sin(S.time*6+hid))+')';ctx.font='bold 20px Georgia';ctx.textAlign='center';
+    ctx.fillText('!',30,-72);ctx.textAlign='left';
+  }
   ctx.restore();
 }
 
@@ -545,10 +649,10 @@ function drawWorld(){
   // vilda hästar
   for(const w of LV.wild){
     if(w.taken)continue;const sx=w.x-cam;if(sx<-60||sx>viewW+60)continue;
-    const fake={t:w.t,id:Math.floor(w.x),row:0,phase:0,state:'run',rot:0};
-    drawHorse(fake,sx,gy,{graze:true,alpha:.92});
-    const pu=.5+.5*Math.sin(S.time*4+w.x);
-    ctx.fillStyle=`rgba(255,224,138,${.5+.4*pu})`;ctx.beginPath();ctx.arc(sx+6,gy-70-4*pu,5,0,Math.PI*2);ctx.fill();
+    const fake={t:w.t,id:Math.floor(w.x),row:0,phase:0,state:'run',rot:0,shy:!!w.shy,calm:0};
+    drawHorse(fake,sx,gy,{graze:!w.shy,static:true,alpha:.96});
+    if(!w.shy){const pu=.5+.5*Math.sin(S.time*4+w.x);
+      ctx.fillStyle=`rgba(255,224,138,${.5+.4*pu})`;ctx.beginPath();ctx.arc(sx+6,gy-78-4*pu,5,0,Math.PI*2);ctx.fill()}
   }
   // flocken
   const list=S.horses.filter(h=>h.state!=='gone').sort((a,b)=>(b.row-a.row)||(a.x-b.x));
@@ -556,7 +660,7 @@ function drawWorld(){
     const sx=h.x-cam;if(sx<-80||sx>viewW+80)continue;
     const rowOff=h.row*5;
     if((h.state==='run'||h.state==='air')&&!inChasm(h.x)){
-      ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(sx,gy-rowOff+1,18*(1-h.row*.05),3,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(sx,gy-rowOff+1,22*(1-h.row*.05),3.2,0,0,Math.PI*2);ctx.fill();
     }
     const al=h.state==='left'?1-clamp((h.age-1.5)/.9,0,1):1;
     drawHorse(h,sx,gy-rowOff-h.y,{alpha:al});
@@ -576,18 +680,19 @@ function drawWorld(){
 }
 
 function drawHud(){
-  const al=aliveList(),cnt={L:0,R:0,J:0};al.forEach(h=>cnt[h.t]++);
+  const al=aliveList(),cnt={L:0,R:0,J:0,T:0,K:0};al.forEach(h=>cnt[h.t]++);
   ctx.save();
   const sc=1+.3*S.bump;
   ctx.translate(16,40);ctx.scale(sc,sc);
   ctx.fillStyle='#1f2a1c';ctx.font='bold 36px Georgia';ctx.fillText(String(al.length),0,0);
   ctx.restore();
-  ctx.font='12px Georgia';let x=16;
+  ctx.font='13px Georgia';let x=16;
   for(const k of Object.keys(TYPES)){
-    ctx.fillStyle=TYPES[k].color;ctx.strokeStyle='#2b2218';ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(x+5,56,5,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#1f2a1c';ctx.fillText(cnt[k],x+13,60);x+=34;
+    ctx.globalAlpha=cnt[k]?1:.35;
+    drawHorse({t:k,id:0,row:0,phase:0,state:'run',rot:0},x+16,86,{static:true,scale:.42});
+    ctx.fillStyle='#1f2a1c';ctx.fillText(cnt[k],x+36,82);x+=50;
   }
+  ctx.globalAlpha=1;
   // framsteg
   const w=Math.min(320,viewW*.38),bx=(viewW-w)/2,by=18;
   ctx.fillStyle='rgba(31,42,28,.25)';ctx.fillRect(bx,by,w,6);
@@ -649,7 +754,7 @@ function frame(t){
 }
 
 idleScene();refreshTitle();
-window.__sth={S,LV,CFG,tap,front,startRun,loadSave,aliveList,idleScene,refreshTitle,addHorse,relayout,nextStall};
+window.__sth={S,LV,CFG,tap,front,startRun,loadSave,aliveList,idleScene,refreshTitle,addHorse,relayout,nextStall,tameDone};
 requestAnimationFrame(frame);
 })();
 </script>
