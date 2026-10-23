@@ -1,4 +1,4 @@
-# Save the Horses – prototyp 0.4
+# Save the Horses – prototyp 0.5
 
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
@@ -33,3 +33,13 @@ Konstanter överst i skriptet (`CFG`, `TYPES`) och `buildLevel()`: fart, hopplä
 - **Vila:** flocken stannar (efter pågående hopp). Skadade hästar läker på 3,5 s vila (cirkel ovanför hästen), eller i nästa hage.
 - **Vargar** (5 st): när ett "!" och texten "Varg!" visas måste du stanna. Står flocken still i fem sekunder drar vargen sig undan. Går du vidare tar den en häst (en skadad först).
 - **Dygn:** sol upp -> dag -> solnedgång -> skymning -> stjärnklart natt med måne, kopplat till hur långt du kommit på banan. Lång vila skjuter fram kvällen något. Världen och hästarna färgas efter ljuset.
+
+## Nytt i 0.5
+- **Finare hästar:** tunnare, avsmalnande ben med knän, hasar och hovar; mer detaljerade huvuden med öga, näsborre, öron och pannlugg; skuggning och muskler på kroppen; man och svans i flera lager. Varje typ har egna drag (vit bläs och sockar, stjärn, fläckar, långhåriga hovar, gråspräcklig päls).
+- **Stallet** (knappen "Stallet" i hagen):
+  - Välj en häst i flocken eller stallet.
+  - **Borsta:** dra över hästen. Smuts försvinner, dammoln syns, och när hästen är 100 % ren skimrar pälsen. Smutsiga hästar ser skrapiga ut i spelet.
+  - **Frisyr:** Naturlig, Kort man, Flätad man, Helflätad, Vildman, Rosetter.
+  - **Grimma:** Ingen, Röd, Blå, Grön, Guld, Lila.
+  - **Ta in i stallet:** upp till 3 hästar kan tas in och är då trygga även om flocken försvinner. De kan tas ut igen vid nästa hage.
+  - Allt sparas (flock, stall, frisyr, grimma och renhet).
