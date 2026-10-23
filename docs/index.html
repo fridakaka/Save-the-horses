@@ -751,7 +751,8 @@ const SPRITES={
   saga:{imgs:{},tc:{},meta:{
     large:{file:'saga_large.png',w:1024,h:787,baseline:773,anchorX:506.2,topToBaseline:761.8},
     small:{file:'saga_small.png',w:320,h:246,baseline:241.6,anchorX:158.2,topToBaseline:238.1}},
-    gallop:{"airIndex": 3, "frames": [{"large": {"file": "saga_gallop0_large.png", "w": 1163, "h": 724, "ax": 640.1, "ay": 711.0}, "small": {"file": "saga_gallop0_small.png", "w": 363, "h": 226, "ax": 200.0, "ay": 222.2}}, {"large": {"file": "saga_gallop1_large.png", "w": 1186, "h": 642, "ax": 671.2, "ay": 711.0}, "small": {"file": "saga_gallop1_small.png", "w": 371, "h": 201, "ax": 209.7, "ay": 222.2}}, {"large": {"file": "saga_gallop2_large.png", "w": 1148, "h": 720, "ax": 640.1, "ay": 723.0}, "small": {"file": "saga_gallop2_small.png", "w": 359, "h": 225, "ax": 200.0, "ay": 225.9}}, {"large": {"file": "saga_gallop3_large.png", "w": 1164, "h": 633, "ax": 626.7, "ay": 699.9}, "small": {"file": "saga_gallop3_small.png", "w": 364, "h": 198, "ax": 195.9, "ay": 218.7}}]}}
+    gallop:{"frames": [{"small": {"file": "saga_gallop0_small.png", "w": 360, "h": 224, "ax": 198.5, "ay": 220.5}}, {"small": {"file": "saga_gallop1_small.png", "w": 360, "h": 229, "ax": 195.9, "ay": 223.0}}, {"small": {"file": "saga_gallop2_small.png", "w": 354, "h": 238, "ax": 196.5, "ay": 231.0}}, {"small": {"file": "saga_gallop3_small.png", "w": 356, "h": 230, "ax": 191.9, "ay": 229.7}}, {"small": {"file": "saga_gallop4_small.png", "w": 361, "h": 217, "ax": 194.7, "ay": 217.3}}, {"small": {"file": "saga_gallop5_small.png", "w": 356, "h": 224, "ax": 198.5, "ay": 224.2}}, {"small": {"file": "saga_gallop6_small.png", "w": 368, "h": 221, "ax": 208.2, "ay": 220.8}}, {"small": {"file": "saga_gallop7_small.png", "w": 349, "h": 232, "ax": 193.8, "ay": 232.0}}]},
+    jump:{"frames": [{"small": {"file": "saga_jump0_small.png", "w": 349, "h": 249, "ax": 185.2, "ay": 245.4}}, {"small": {"file": "saga_jump1_small.png", "w": 351, "h": 236, "ax": 179.5, "ay": 233.4}}, {"small": {"file": "saga_jump2_small.png", "w": 376, "h": 206, "ax": 190.9, "ay": 206.2}}, {"small": {"file": "saga_jump3_small.png", "w": 368, "h": 236, "ax": 190.3, "ay": 231.6}}]}}
 };
 S.spriteAll=SPRITE_MODE==='all';
 if(SPRITE_MODE!=='off')for(const key of Object.keys(SPRITES)){
@@ -761,12 +762,12 @@ if(SPRITE_MODE!=='off')for(const key of Object.keys(SPRITES)){
   }
 }
 if(SPRITE_MODE!=='off')for(const key of Object.keys(SPRITES)){
-  const sp=SPRITES[key],gl=sp.gallop;if(!gl)continue;
-  sp.gimgs=gl.frames.map(()=>({}));gl.ready=false;let left=gl.frames.length*2;
-  gl.frames.forEach((f,i)=>['large','small'].forEach(sz=>{
-    const im=new Image();im.onload=()=>{sp.gimgs[i][sz]=im;if(--left===0)gl.ready=true};
-    im.src='assets/horses/'+key+'/'+f[sz].file;
-  }));
+  const sp=SPRITES[key];if(!sp.gallop)continue;
+  sp.ready=false;let left=0;
+  for(const set of ['gallop','jump']){
+    const fl=sp[set].frames;sp[set].imgs=fl.map(()=>null);left+=fl.length;
+    fl.forEach((f,i)=>{const im=new Image();im.onload=()=>{sp[set].imgs[i]=im;if(--left===0)sp.ready=true};im.src='assets/horses/'+key+'/'+f.small.file});
+  }
 }
 ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
 function spriteFor(h){
@@ -791,20 +792,24 @@ function drawSprite(h,sp,sx,sy,o){
   const L=LOOK[h.t]||LOOK.R;
   const hu=80*(o.scale||1)*HS*L.s*(1-(h.row||0)*.05);                 // örats topp till hov, i logiska enheter
   const wDev=(sp.meta.large.w/sp.meta.large.topToBaseline)*hu*scale;  // ritad bredd i skärmpixlar
-  const sz=wDev>400?'large':'small',m=sp.meta[sz],k=hu/m.topToBaseline;
-  let img=sp.imgs[sz],ax=m.anchorX,ay=m.baseline,dw=m.w,dh=m.h,id=sz+':s';
-  const gl=sp.gallop;
-  if(!o.stable&&gl&&gl.ready){
-    let gi=-1;
-    if(h.state==='air'||h.state==='fall')gi=gl.airIndex;
-    else if(h.state==='run'&&S.v>50)gi=Math.floor((((h.phase||0)/(2*Math.PI))%1+1)%1*gl.frames.length)%gl.frames.length;
-    if(gi>=0){const f=gl.frames[gi][sz];img=sp.gimgs[gi][sz];ax=f.ax;ay=f.ay;dw=f.w;dh=f.h;id=sz+':g'+gi}
+  const sz=wDev>400?'large':'small',m=sp.meta[sz];
+  let img=sp.imgs[sz],ax=m.anchorX,ay=m.baseline,dw=m.w,dh=m.h,id=sz+':s',kk=hu/m.topToBaseline;
+  if(!o.stable&&sp.ready){
+    let fr=null,im=null;
+    if(h.state==='air'||h.state==='fall'){
+      const t=h.state==='fall'?.6:clamp((h.x-h.xt)/(h.D||1),0,.999),n=sp.jump.frames.length,i=Math.min(n-1,t<.2?0:t<.5?1:t<.8?2:3);
+      fr=sp.jump.frames[i].small;im=sp.jump.imgs[i];
+    }else if(h.state==='run'&&S.v>50){
+      const n=sp.gallop.frames.length,i=Math.floor((((h.phase||0)/(2*Math.PI))%1+1)%1*n)%n;
+      fr=sp.gallop.frames[i].small;im=sp.gallop.imgs[i];
+    }
+    if(fr&&im){img=im;ax=fr.ax;ay=fr.ay;dw=fr.w;dh=fr.h;id='f'+fr.file;kk=hu/sp.meta.small.topToBaseline}
   }
   ctx.save();ctx.translate(sx,sy);
   ctx.globalAlpha=o.alpha!=null?o.alpha:1;
   if(h.rot){ctx.translate(0,-hu*.4);ctx.rotate(h.rot);ctx.translate(0,hu*.4)}
   if(o.stable)ctx.scale(1,1+Math.sin(S.time*1.7)*.004);
-  ctx.drawImage(tintedSprite(sp,id,img),-ax*k,-ay*k,dw*k,dh*k);
+  ctx.drawImage(tintedSprite(sp,id,img),-ax*kk,-ay*kk,dw*kk,dh*kk);
   ctx.restore();
 }
 const LOOK={

@@ -1,84 +1,152 @@
 {
- "order": [
-  "a",
-  "d",
-  "c",
-  "b"
- ],
  "colorFactor": [
-  0.9094,
-  0.9273,
-  0.9295
+  0.9076,
+  0.9247,
+  0.9284
  ],
- "scale": 0.9888,
- "frames": [
-  {
-   "letter": "a",
-   "large": {
-    "file": "saga_gallop0_large.png",
-    "w": 1163,
-    "h": 724,
-    "ax": 640.1,
-    "ay": 711.0
+ "scale": 0.9817,
+ "gallop": {
+  "order": [
+   "a",
+   "e",
+   "g",
+   "h",
+   "b",
+   "c",
+   "d",
+   "f"
+  ],
+  "frames": [
+   {
+    "letter": "a",
+    "small": {
+     "file": "saga_gallop0_small.png",
+     "w": 360,
+     "h": 224,
+     "ax": 198.5,
+     "ay": 220.5
+    }
    },
-   "small": {
-    "file": "saga_gallop0_small.png",
-    "w": 363,
-    "h": 226,
-    "ax": 200.0,
-    "ay": 222.2
-   }
-  },
-  {
-   "letter": "d",
-   "large": {
-    "file": "saga_gallop1_large.png",
-    "w": 1186,
-    "h": 642,
-    "ax": 671.2,
-    "ay": 711.0
+   {
+    "letter": "e",
+    "small": {
+     "file": "saga_gallop1_small.png",
+     "w": 360,
+     "h": 229,
+     "ax": 195.9,
+     "ay": 223.0
+    }
    },
-   "small": {
-    "file": "saga_gallop1_small.png",
-    "w": 371,
-    "h": 201,
-    "ax": 209.7,
-    "ay": 222.2
-   }
-  },
-  {
-   "letter": "c",
-   "large": {
-    "file": "saga_gallop2_large.png",
-    "w": 1148,
-    "h": 720,
-    "ax": 640.1,
-    "ay": 723.0
+   {
+    "letter": "g",
+    "small": {
+     "file": "saga_gallop2_small.png",
+     "w": 354,
+     "h": 238,
+     "ax": 196.5,
+     "ay": 231.0
+    }
    },
-   "small": {
-    "file": "saga_gallop2_small.png",
-    "w": 359,
-    "h": 225,
-    "ax": 200.0,
-    "ay": 225.9
-   }
-  },
-  {
-   "letter": "b",
-   "large": {
-    "file": "saga_gallop3_large.png",
-    "w": 1164,
-    "h": 633,
-    "ax": 626.7,
-    "ay": 699.9
+   {
+    "letter": "h",
+    "small": {
+     "file": "saga_gallop3_small.png",
+     "w": 356,
+     "h": 230,
+     "ax": 191.9,
+     "ay": 229.7
+    }
    },
-   "small": {
-    "file": "saga_gallop3_small.png",
-    "w": 364,
-    "h": 198,
-    "ax": 195.9,
-    "ay": 218.7
+   {
+    "letter": "b",
+    "small": {
+     "file": "saga_gallop4_small.png",
+     "w": 361,
+     "h": 217,
+     "ax": 194.7,
+     "ay": 217.3
+    }
+   },
+   {
+    "letter": "c",
+    "small": {
+     "file": "saga_gallop5_small.png",
+     "w": 356,
+     "h": 224,
+     "ax": 198.5,
+     "ay": 224.2
+    }
+   },
+   {
+    "letter": "d",
+    "small": {
+     "file": "saga_gallop6_small.png",
+     "w": 368,
+     "h": 221,
+     "ax": 208.2,
+     "ay": 220.8
+    }
+   },
+   {
+    "letter": "f",
+    "small": {
+     "file": "saga_gallop7_small.png",
+     "w": 349,
+     "h": 232,
+     "ax": 193.8,
+     "ay": 232.0
+    }
    }
-  }
- ]
+  ]
+ },
+ "jump": {
+  "order": [
+   "3",
+   "4",
+   "1",
+   "2"
+  ],
+  "frames": [
+   {
+    "letter": "3",
+    "small": {
+     "file": "saga_jump0_small.png",
+     "w": 349,
+     "h": 249,
+     "ax": 185.2,
+     "ay": 245.4
+    }
+   },
+   {
+    "letter": "4",
+    "small": {
+     "file": "saga_jump1_small.png",
+     "w": 351,
+     "h": 236,
+     "ax": 179.5,
+     "ay": 233.4
+    }
+   },
+   {
+    "letter": "1",
+    "small": {
+     "file": "saga_jump2_small.png",
+     "w": 376,
+     "h": 206,
+     "ax": 190.9,
+     "ay": 206.2
+    }
+   },
+   {
+    "letter": "2",
+    "small": {
+     "file": "saga_jump3_small.png",
+     "w": 368,
+     "h": 236,
+     "ax": 190.3,
+     "ay": 231.6
+    }
+   }
+  ]
+ }
 }

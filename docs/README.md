@@ -1,4 +1,4 @@
-# Save the Horses – prototyp 0.8
+# Save the Horses – prototyp 0.9
 
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
@@ -58,3 +58,9 @@ Konstanter överst i skriptet (`CFG`, `TYPES`) och `buildLevel()`: fart, hopplä
 - Ordningen a → d → c → b valdes så att silhuetten ändras minst mellan bilderna och så att benens rörelse blir rimlig (landa fram, samla, trycka ifrån, sträcka ut).
 - I spelet: stående när flocken står/går, galoppbilder när farten är över 50, utsträckt pose (bild b) i hopp och fall. Byte av bild följer hästens galoppfas, så varje häst har sin egen takt.
 - Kända begränsningar: bara fyra bilder (ca 10 bilder/s i full fart), håret ritas om i varje bild så det kan flimra något, ingen egen hoppbild (använder den utsträckta posen), inga frisyr-/grimm-/smutslager på bilderna.
+
+## Nytt i 0.9: åtta galoppbilder och ett riktigt hopp
+- **Galopp:** åtta målade bilder (a, e, g, h, b, c, d, f). Ordningen valdes så att silhuetten ändras minst mellan bilderna och så att framhoven rör sig bakåt under marken i stödfasen. I full fart blir det ca 20 bilder/s.
+- **Hopp:** fyra målade poser (jump_3 avstamp, jump_4 stigande, jump_1 högsta punkt, jump_2 landning) som väljs efter hur långt in i hoppet hästen är. Fall ner i en avgrund använder högsta-punkt-posen.
+- Bygg om bilderna med: `python3 -I tools/make_gallop.py docs/assets/horses/saga saga a,e,g,h,b,c,d,f 3,4,1,2`. Skriptet skalar och färgjusterar alla poser mot den stående bilden, registrerar dem (galopp mot fast marklinje, hopp så att hovarna aldrig hamnar under marken) och skriver bara den lilla storleken (flocken). Stor storlek behövs bara för den stående bilden i stallet.
+- Begränsningar: håret ritas om i varje bild (kan flimra något), hovarna är glansiga och ser nästan skodda ut jämfört med den stående bilden, och bilderna saknar lager för frisyr, grimma och borstning.

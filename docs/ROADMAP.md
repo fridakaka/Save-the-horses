@@ -9,9 +9,9 @@ Beslutat inriktning: människan är vårdare och upptäckare, inte huvudperson �
 Konst som behövs: person till fots (neutral siluett, valbart utseende senare), ryttare på häst, sadel som lager.
 
 ## Konststil (pågår): handmålade 2D-hästar
-Status: ingen bildgenerering finns i arbetsflödet, så bilderna tas fram utanför och läggs in som PNG. Saga är inlagd i två poser: stående (sidovy) och galopp (4 bilder), utvärderade i stall, flock och siluett. Galoppen ligger i spelet.
+Status: ingen bildgenerering finns i arbetsflödet, så bilderna tas fram utanför och läggs in som PNG. Saga är inlagd: stående (sidovy), galopp (8 bilder) och hopp (4 poser: avstamp, stigande, högsta punkt, landning). Allt ligger i spelet.
 Nästa: besluta om stilen duger (mjukare/mer sagolik?), därefter konsekventa varianter och poser.
-- Pose-/bildlista per häst: stå (klar för Saga), äta/vila (huvud ner), galopp 6–8 rutor, hopp 3 poser (avstamp, luft, landning), snubbla/falla, skadad.
+- Pose-/bildlista per häst: stå (klar för Saga), galopp 8 rutor (klar), hopp 4 poser (klar), äta/vila (huvud ner), snubbla/falla, skadad.
 - Anpassning (frisyr, grimma, smuts, glans) kräver lager: kropp, hals+huvud, fyra ben, man- och svansvarianter, grimma, smuts- och glansskikt. Alternativ: helbilder per pose utan anpassning.
 - Pälsvarianter för de andra typerna: samma pose, kamera, ljus och stilguide, Saga som referensbild.
 - Bakgrund och föremål behöver målas i samma stil, annars sticker hästarna ut mot vektorvärlden.
