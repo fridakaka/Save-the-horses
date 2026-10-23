@@ -1,4 +1,4 @@
-# Save the Horses – prototyp 0.7
+# Save the Horses – prototyp 0.8
 
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
@@ -50,5 +50,11 @@ Konstanter överst i skriptet (`CFG`, `TYPES`) och `buildLevel()`: fart, hopplä
 
 ## Nytt i 0.7: första målade bilden (Saga)
 - `docs/assets/horses/saga/saga_master.png` är originalbilden (1536×1024, genomskinlig). `tools/make_sprites.py` beskär den, hittar marklinje och ankarpunkt och gör `saga_large.png` (1024 px, stallet) och `saga_small.png` (320 px, flocken) med förmultiplicerad alfa så att inga kantskikt uppstår. Kör: `python3 -I tools/make_sprites.py docs/assets/horses/saga/saga_master.png saga`.
-- Saga ritas som målad bild i stallvyn. Knappen "Bild" växlar mot den ritade hästen. Tryck **P** i spelet (eller `?sprites=all`) för att se målade Saga även i flocken. `?sprites=off` stänger av bilder.
+- Saga ritas som målad bild i stallvyn och i spelet. Knappen "Bild" i stallet växlar mot den ritade hästen. Tryck **P** i spelet för att slå av/på målade Saga. `?sprites=stall` visar den bara i stallet, `?sprites=off` stänger av bilder.
 - Begränsningar i prototypen: bilden är en stillastående pose (ingen galopp/hopp än), och frisyr, grimma, borstning och smuts visas inte på den. Bilden mörknar med dygnets ljus.
+
+## Nytt i 0.8: Saga galopperar
+- Fyra målade galoppbilder (`gallop_a..d_master.png`) görs spelklara med `python3 -I tools/make_gallop.py docs/assets/horses/saga saga a,d,c,b`. Skriptet skalar dem så att pälsytan matchar den stående bilden, jämnar ut färgen (faktor ca 0,91/0,93/0,93 eftersom galoppbilderna var något ljusare), registrerar kroppen i sidled och en gemensam marklinje i höjdled och gör en stor och en liten version av varje bild.
+- Ordningen a → d → c → b valdes så att silhuetten ändras minst mellan bilderna och så att benens rörelse blir rimlig (landa fram, samla, trycka ifrån, sträcka ut).
+- I spelet: stående när flocken står/går, galoppbilder när farten är över 50, utsträckt pose (bild b) i hopp och fall. Byte av bild följer hästens galoppfas, så varje häst har sin egen takt.
+- Kända begränsningar: bara fyra bilder (ca 10 bilder/s i full fart), håret ritas om i varje bild så det kan flimra något, ingen egen hoppbild (använder den utsträckta posen), inga frisyr-/grimm-/smutslager på bilderna.

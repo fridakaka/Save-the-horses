@@ -1,0 +1,84 @@
+{
+ "order": [
+  "a",
+  "d",
+  "c",
+  "b"
+ ],
+ "colorFactor": [
+  0.9094,
+  0.9273,
+  0.9295
+ ],
+ "scale": 0.9888,
+ "frames": [
+  {
+   "letter": "a",
+   "large": {
+    "file": "saga_gallop0_large.png",
+    "w": 1163,
+    "h": 724,
+    "ax": 640.1,
+    "ay": 711.0
+   },
+   "small": {
+    "file": "saga_gallop0_small.png",
+    "w": 363,
+    "h": 226,
+    "ax": 200.0,
+    "ay": 222.2
+   }
+  },
+  {
+   "letter": "d",
+   "large": {
+    "file": "saga_gallop1_large.png",
+    "w": 1186,
+    "h": 642,
+    "ax": 671.2,
+    "ay": 711.0
+   },
+   "small": {
+    "file": "saga_gallop1_small.png",
+    "w": 371,
+    "h": 201,
+    "ax": 209.7,
+    "ay": 222.2
+   }
+  },
+  {
+   "letter": "c",
+   "large": {
+    "file": "saga_gallop2_large.png",
+    "w": 1148,
+    "h": 720,
+    "ax": 640.1,
+    "ay": 723.0
+   },
+   "small": {
+    "file": "saga_gallop2_small.png",
+    "w": 359,
+    "h": 225,
+    "ax": 200.0,
+    "ay": 225.9
+   }
+  },
+  {
+   "letter": "b",
+   "large": {
+    "file": "saga_gallop3_large.png",
+    "w": 1164,
+    "h": 633,
+    "ax": 626.7,
+    "ay": 699.9
+   },
+   "small": {
+    "file": "saga_gallop3_small.png",
+    "w": 364,
+    "h": 198,
+    "ax": 195.9,
+    "ay": 218.7
+   }
+  }
+ ]
+}
