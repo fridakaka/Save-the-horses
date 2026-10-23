@@ -1,4 +1,4 @@
-# Save the Horses – prototyp 0.5
+# Save the Horses – prototyp 0.6
 
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
@@ -43,3 +43,7 @@ Konstanter överst i skriptet (`CFG`, `TYPES`) och `buildLevel()`: fart, hopplä
   - **Grimma:** Ingen, Röd, Blå, Grön, Guld, Lila.
   - **Ta in i stallet:** upp till 3 hästar kan tas in och är då trygga även om flocken försvinner. De kan tas ut igen vid nästa hage.
   - Allt sparas (flock, stall, frisyr, grimma och renhet).
+
+## Nytt i 0.6
+- **Hästanatomi:** längre ben med synliga knän, hasar och hovar; kraftigare välvd hals; kilformat huvud med käke och kind; högre svansfäste; rundare bakdel med lår och hasvinkel; muskel- och skuggdetaljer. Flera fler hårstrån i manen.
+- Prototypen är fortfarande ritad i kod (vektorgrafik). För en riktigt fotorealistisk häst behövs handritade eller renderade bilder/sprites i en senare version.
