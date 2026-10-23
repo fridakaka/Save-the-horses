@@ -284,7 +284,7 @@ const LV=buildLevel();
 
 /* ================= Spelstate ================= */
 const S={mode:'title',F:0,v:0,ramp:0,time:0,horses:[],events:[],lastTap:-9,buffer:0,toasts:[],floats:[],
-  shake:0,flash:0,bump:0,seq:0,nameIx:0,zoomE:0,fx:0,stall:null,focusH:null,pending:null,fallen:[],coy:0,coyBase:0,coyCalm:0,holding:false,tameP:0,tameShown:-1,resting:false,restTime:0,spriteOn:true,spriteAll:SPRITE_MODE==='all',stable:[],sel:null,stableFrom:'hage',memText:'',parts:[],brush:{x:0,y:0,px:0,py:0,down:false,on:false,dirty:false},nextHage:0,overT:0,lostTotal:0,joinedTotal:0,perfects:0,muted:false,onStep:null,timeScale:1};
+  shake:0,flash:0,bump:0,seq:0,nameIx:0,zoomE:0,fx:0,stall:null,focusH:null,pending:null,fallen:[],coy:0,coyBase:0,coyCalm:0,holding:false,tameP:0,tameShown:-1,resting:false,restTime:0,spriteOn:true,spriteAll:false,stable:[],sel:null,stableFrom:'hage',memText:'',parts:[],brush:{x:0,y:0,px:0,py:0,down:false,on:false,dirty:false},nextHage:0,overT:0,lostTotal:0,joinedTotal:0,perfects:0,muted:false,onStep:null,timeScale:1};
 const isAlive=h=>h.state==='run'||h.state==='air'||h.state==='climb';
 const aliveList=()=>S.horses.filter(isAlive);
 function front(){let b=null;for(const h of S.horses){if(!isAlive(h)||h.state==='climb'||h.joinT>0)continue;if(!b||h.x>b.x)b=h}return b}
@@ -752,6 +752,7 @@ const SPRITES={
     large:{file:'saga_large.png',w:1024,h:787,baseline:773,anchorX:506.2,topToBaseline:761.8},
     small:{file:'saga_small.png',w:320,h:246,baseline:241.6,anchorX:158.2,topToBaseline:238.1}}}
 };
+S.spriteAll=SPRITE_MODE==='all';
 if(SPRITE_MODE!=='off')for(const key of Object.keys(SPRITES)){
   for(const sz of ['large','small']){
     const im=new Image();im.onload=()=>{SPRITES[key].imgs[sz]=im};
