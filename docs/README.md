@@ -1,11 +1,11 @@
-# Save the Horses – prototyp 0.3
+# Save the Horses – prototyp 0.4
 
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
 ## Kör
 - Öppna `docs/index.html` i en webbläsare, eller kör `python3 -m http.server` i mappen och öppna `localhost:8000`.
 - På mobil: liggande läge. Lägg gärna sidan på hemskärmen/öppna via lokalt nätverk.
-- Styrning: tryck/klicka var som helst eller mellanslag/pil upp = hoppa.
+- Styrning: tryck/klicka var som helst eller mellanslag/pil upp = hoppa. **Håll Vila-knappen** (nere till vänster, eller S/pil ned/vänster Shift) = flocken stannar. Släpp = den galopperar vidare. Man kan inte hoppa när flocken står still.
 
 ## Vad som finns
 - Autogalopp genom en fast bana i 3 sektioner (≈ 100 s) med hage efter varje sektion.
@@ -27,3 +27,9 @@ Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**
 
 ## Justera
 Konstanter överst i skriptet (`CFG`, `TYPES`) och `buildLevel()`: fart, hopplängder, avgrundsbredd, förlåtande marginal (`coyote`), flocklängd.
+
+## Nytt i 0.4
+- **Galopp** i stället för trav: tretaktsgång med svävfas, kroppen gungar, benen sträcks ut, svansen flyger bakåt. Gången saktar in och blir stilla när flocken bromsar.
+- **Vila:** flocken stannar (efter pågående hopp). Skadade hästar läker på 3,5 s vila (cirkel ovanför hästen), eller i nästa hage.
+- **Vargar** (5 st): när ett "!" och texten "Varg!" visas måste du stanna. Står flocken still i fem sekunder drar vargen sig undan. Går du vidare tar den en häst (en skadad först).
+- **Dygn:** sol upp -> dag -> solnedgång -> skymning -> stjärnklart natt med måne, kopplat till hur långt du kommit på banan. Lång vila skjuter fram kvällen något. Världen och hästarna färgas efter ljuset.
