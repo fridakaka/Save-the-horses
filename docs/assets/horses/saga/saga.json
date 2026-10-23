@@ -1,0 +1,25 @@
+{
+ "source": "saga_master.png",
+ "crop_px": [
+  1285,
+  987
+ ],
+ "sizes": {
+  "large": {
+   "file": "saga_large.png",
+   "w": 1024,
+   "h": 787,
+   "baseline": 773.0,
+   "anchorX": 506.2,
+   "topToBaseline": 761.8
+  },
+  "small": {
+   "file": "saga_small.png",
+   "w": 320,
+   "h": 246,
+   "baseline": 241.6,
+   "anchorX": 158.2,
+   "topToBaseline": 238.1
+  }
+ }
+}

@@ -1,4 +1,4 @@
-# Save the Horses – prototyp 0.6
+# Save the Horses – prototyp 0.7
 
 Grå-boxad webbprototyp för att testa **hoppkänslan** och **sparning i hagar**. Ingen riktig konst, inga beroenden – en enda fil.
 
@@ -47,3 +47,8 @@ Konstanter överst i skriptet (`CFG`, `TYPES`) och `buildLevel()`: fart, hopplä
 ## Nytt i 0.6
 - **Hästanatomi:** längre ben med synliga knän, hasar och hovar; kraftigare välvd hals; kilformat huvud med käke och kind; högre svansfäste; rundare bakdel med lår och hasvinkel; muskel- och skuggdetaljer. Flera fler hårstrån i manen.
 - Prototypen är fortfarande ritad i kod (vektorgrafik). För en riktigt fotorealistisk häst behövs handritade eller renderade bilder/sprites i en senare version.
+
+## Nytt i 0.7: första målade bilden (Saga)
+- `docs/assets/horses/saga/saga_master.png` är originalbilden (1536×1024, genomskinlig). `tools/make_sprites.py` beskär den, hittar marklinje och ankarpunkt och gör `saga_large.png` (1024 px, stallet) och `saga_small.png` (320 px, flocken) med förmultiplicerad alfa så att inga kantskikt uppstår. Kör: `python3 -I tools/make_sprites.py docs/assets/horses/saga/saga_master.png saga`.
+- Saga ritas som målad bild i stallvyn. Knappen "Bild" växlar mot den ritade hästen. Tryck **P** i spelet (eller `?sprites=all`) för att se målade Saga även i flocken. `?sprites=off` stänger av bilder.
+- Begränsningar i prototypen: bilden är en stillastående pose (ingen galopp/hopp än), och frisyr, grimma, borstning och smuts visas inte på den. Bilden mörknar med dygnets ljus.
